@@ -59,6 +59,9 @@ The Dockerfile expects to be run from the project root. Update it if needed:
    - **Build Command:** Leave empty (Docker build)
    - **Dockerfile Path:** `backend/Dockerfile`
    - **Docker Build Context:** `.` (project root)
+   - **Instance Type:** Select "Starter" (not "Free") to support larger Docker images
+     - Free tier has 2GB image limit
+     - Starter tier supports up to 10GB images
 
 4. **Configure Environment Variables:**
    Add the following secrets in Koyeb:
@@ -278,10 +281,20 @@ The backend already has CORS configured to allow all origins. If you encounter C
 
 ### Backend Issues
 
+**Problem: Image size exceeds limit (2000 MiB)**
+- **Solution 1:** Use `starter` instance type instead of `free` (supports up to 10GB images)
+  - Update `koyeb.yaml`: Change `instance_type: free` to `instance_type: starter`
+  - Or in Koyeb dashboard: Settings → Instance → Change to "Starter"
+- **Solution 2:** The Dockerfile has been optimized with multi-stage builds
+- **Solution 3:** If still too large, use `Dockerfile.optimized` (Alpine-based, smaller)
+  - Change Dockerfile path in Koyeb to `backend/Dockerfile.optimized`
+- **Note:** The optimized Dockerfile uses multi-stage builds and `.dockerignore` to reduce size
+
 **Problem: Build fails on Koyeb**
 - Check Dockerfile path is correct: `backend/Dockerfile`
 - Verify build context is set to project root: `.`
 - Check Koyeb build logs for specific errors
+- Ensure `.dockerignore` file exists in project root
 
 **Problem: Backend returns 500 errors**
 - Check environment variables are set correctly
@@ -345,11 +358,12 @@ The backend already has CORS configured to allow all origins. If you encounter C
 
 ## Cost Estimation
 
-### Free Tier Limits
+### Instance Types
 
 **Koyeb:**
-- Free tier: 1 service, 512MB RAM, shared CPU
-- Sufficient for small to medium traffic
+- **Free tier:** 1 service, 512MB RAM, shared CPU, **2GB image limit** ⚠️
+- **Starter tier:** 1GB RAM, shared CPU, **10GB image limit** (recommended for this app)
+- **Note:** This app requires "Starter" tier due to ML dependencies (sentence-transformers, etc.)
 
 **Vercel:**
 - Free tier: Unlimited projects, 100GB bandwidth/month

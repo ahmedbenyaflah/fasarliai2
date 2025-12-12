@@ -30,4 +30,4 @@ services:
         secret: SUPABASE_SERVICE_ROLE_KEY
     regions:
       - fra
-    instance_type: free
+    instance_type: starter  # Changed from 'free' to 'starter' for larger disk (supports up to 10GB images)
