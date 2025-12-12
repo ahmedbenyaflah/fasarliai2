@@ -3,7 +3,7 @@ services:
   - name: backend
     build:
       context: .
-      dockerfile: backend/Dockerfile
+      dockerfile: Dockerfile
     ports:
       - port: 8000
         protocol: http
@@ -30,4 +30,4 @@ services:
         secret: SUPABASE_SERVICE_ROLE_KEY
     regions:
       - fra
-    instance_type: starter  # Changed from 'free' to 'starter' for larger disk (supports up to 10GB images)
+    instance_type: free
