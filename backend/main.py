@@ -31,6 +31,10 @@ async def send_mfa_email(recipient: str, code: str, subject: str = "Your Login V
     Send MFA code via email using Brevo API. Falls back to console logging if not configured.
     Returns True if email was sent successfully, False otherwise.
     """
+    # Always log code in debug mode
+    if MFA_DEBUG_MODE:
+        print(f"[DEBUG] MFA CODE for {recipient}: {code}")
+    
     try:
         # Check if Brevo is configured
         if not BREVO_API_KEY:
@@ -49,16 +53,36 @@ async def send_mfa_email(recipient: str, code: str, subject: str = "Your Login V
             html_content=f"<strong>Your verification code is: {code}</strong><br><br>This code expires in 3 minutes.<br><br>Do not share this code with anyone."
         )
         
-        api_instance.send_transac_email(send_smtp_email)
-        print(f"[INFO] MFA email sent successfully to {recipient}")
-        return True
+        # Capture API response for debugging
+        try:
+            api_response = api_instance.send_transac_email(send_smtp_email)
+            print(f"[INFO] MFA email sent successfully to {recipient}")
+            print(f"[DEBUG] Brevo API Response: {api_response}")
+            
+            # Log code even on success if debug mode is enabled
+            if MFA_DEBUG_MODE:
+                print(f"[DEBUG] MFA CODE (sent via email): {code}")
+            
+            return True
+        except ApiException as e:
+            # Brevo API error - log full details
+            print(f"[ERROR] Brevo API Exception for {recipient}:")
+            print(f"[ERROR] Status: {e.status}")
+            print(f"[ERROR] Reason: {e.reason}")
+            print(f"[ERROR] Body: {e.body}")
+            print(f"[DEBUG] MFA CODE (email failed): {code}")
+            return False
         
     except ApiException as e:
         print(f"[WARN] Unable to send MFA email to {recipient}: {e}")
+        print(f"[WARN] Status: {e.status}, Reason: {e.reason}")
+        if e.body:
+            print(f"[WARN] Error details: {e.body}")
         print(f"[DEBUG] MFA CODE for {recipient}: {code}")
         return False
     except Exception as exc:
         print(f"[WARN] Unable to send MFA email to {recipient}: {exc}")
+        print(f"[WARN] Exception type: {type(exc).__name__}")
         print(f"[DEBUG] MFA CODE for {recipient}: {code}")
         return False
 
